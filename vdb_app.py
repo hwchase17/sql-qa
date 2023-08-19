@@ -1,4 +1,5 @@
 import ast
+import re
 
 import streamlit as st
 from langchain.agents import AgentExecutor, OpenAIFunctionsAgent
@@ -38,6 +39,16 @@ llm = ChatOpenAI(temperature=0, model_name='gpt-4')
 def run_query_save_results(_db, query):
     res = _db.run(query)
     res = [el for sub in ast.literal_eval(res) for el in sub if el]
+    res = [re.sub(r'\b\d+\b', '', string).strip() for string in res]
+
+    return res
+
+@st.cache_data
+def run_query_save_results_names(_db, query):
+    res = _db.run(query)
+    res = ast.literal_eval(res)
+    res = [' '.join(i) for i in res]
+
     return res
 
 @st.cache_data
@@ -48,10 +59,19 @@ def get_retriever(texts):
     return vector_db.as_retriever()
 
 artists = run_query_save_results(db, "SELECT Name FROM Artist")
+customers = run_query_save_results(db, "SELECT Company, Address, City, State, Country FROM Customer")
+employees = run_query_save_results(db, "SELECT Address, City, State, Country FROM Employee")
 albums = run_query_save_results(db, "SELECT Title FROM Album")
 
+customer_names = run_query_save_results_names(db, "SELECT FirstName, LastName FROM Customer")
+employee_names = run_query_save_results_names(db, "SELECT FirstName, LastName FROM Employee")
+
 texts = (
-    artists +
+    artists + 
+    customers + 
+    customer_names +
+    employee_names +
+    employees + 
     albums
 )
 
@@ -60,7 +80,7 @@ retriever = get_retriever(texts)
 retriever_tool = create_retriever_tool(
     retriever,
     name='name_search',
-    description='use to learn how a piece of data is actually written, can be anything from names, surnames addresses etc'
+    description='use to learn how a piece of data is actually written, can be 	 from names, surnames addresses etc'
 )
 
 sql_agent = create_sql_agent(
@@ -147,4 +167,3 @@ if result is not None:
 		st.button("👍", on_click=send_feedback, args=(run_id, 1))
 	with col2:
 		st.button("👎", on_click=send_feedback, args=(run_id, 0))
-
