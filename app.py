@@ -20,7 +20,7 @@ from langchain_experimental.sql import SQLDatabaseChain
 from langsmith import Client
 from pydantic import BaseModel, Field
 
-st.set_page_config(page_title='🦜🔗 Ask the VDB/SQL DB App')
+st.set_page_config(page_title='🦜🔗 Ask the SQL DB App')
 st.title('🦜🔗 Ask the SQL DB App')
 st.info("""
 Most 'question answering' applications run over unstructured text data. 
