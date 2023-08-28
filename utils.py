@@ -70,29 +70,29 @@ def get_agent():
         description='use to learn how a piece of data is actually written, can be 	 from names, surnames addresses etc'
     )
 
-    # sql_agent = create_sql_agent(
-    #     llm=llm,
-    #     toolkit=SQLDatabaseToolkit(db=db, llm=llm),
-    #     verbose=True,
-    #     agent_type=AgentType.OPENAI_FUNCTIONS
-    # )
-
-    # sql_tool = Tool(
-    #     func=sql_agent.run,
-    #     name="db_agent",
-    #     description="use to get information from the databases, ask exactly what you want in natural language"
-    # )
-
-    db_chain = SQLDatabaseChain.from_llm(
-        OpenAI(temperature=0, verbose=True),
-        db
-        )
+    sql_agent = create_sql_agent(
+        llm=llm,
+        toolkit=SQLDatabaseToolkit(db=db, llm=llm),
+        verbose=True,
+        agent_type=AgentType.OPENAI_FUNCTIONS
+    )
 
     sql_tool = Tool(
-        func=db_chain.run,
+        func=sql_agent.run,
         name="db_agent",
         description="use to get information from the databases, ask exactly what you want in natural language"
     )
+
+    # db_chain = SQLDatabaseChain.from_llm(
+    #     OpenAI(temperature=0, verbose=True),
+    #     db
+    #     )
+
+    # sql_tool = Tool(
+    #     func=db_chain.run,
+    #     name="db_agent",
+    #     description="use to get information from the databases, ask exactly what you want in natural language"
+    # )
 
     TEMPLATE = """You are working with an SQL database.
 
