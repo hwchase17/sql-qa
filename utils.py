@@ -1,6 +1,7 @@
 import ast
 import re
 
+from langchain import OpenAI
 from langchain.agents import AgentExecutor, OpenAIFunctionsAgent
 from langchain.agents.agent_toolkits import (
     SQLDatabaseToolkit,
@@ -15,6 +16,7 @@ from langchain.sql_database import SQLDatabase
 from langchain.tools import Tool
 from langchain.utilities import SQLDatabase
 from langchain.vectorstores import FAISS
+from langchain_experimental.sql import SQLDatabaseChain
 from pydantic import BaseModel, Field
 
 
@@ -68,15 +70,26 @@ def get_agent():
         description='use to learn how a piece of data is actually written, can be 	 from names, surnames addresses etc'
     )
 
-    sql_agent = create_sql_agent(
-        llm=llm,
-        toolkit=SQLDatabaseToolkit(db=db, llm=llm),
-        verbose=True,
-        agent_type=AgentType.OPENAI_FUNCTIONS
-    )
+    # sql_agent = create_sql_agent(
+    #     llm=llm,
+    #     toolkit=SQLDatabaseToolkit(db=db, llm=llm),
+    #     verbose=True,
+    #     agent_type=AgentType.OPENAI_FUNCTIONS
+    # )
+
+    # sql_tool = Tool(
+    #     func=sql_agent.run,
+    #     name="db_agent",
+    #     description="use to get information from the databases, ask exactly what you want in natural language"
+    # )
+
+    db_chain = SQLDatabaseChain.from_llm(
+        OpenAI(temperature=0, verbose=True),
+        db
+        )
 
     sql_tool = Tool(
-        func=sql_agent.run,
+        func=db_chain.run,
         name="db_agent",
         description="use to get information from the databases, ask exactly what you want in natural language"
     )
